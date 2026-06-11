@@ -1,17 +1,17 @@
 import os
+import sys
 from pathlib import Path
-from dotenv import load_dotenv
-import dj_database_url
 
-# Load environment variables
-load_dotenv()
-
+# Для Vercel - определяем корневую директорию
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Security
+# Добавляем папку проекта в PATH
+sys.path.append(str(BASE_DIR))
+
+# Базовые настройки
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-your-secret-key-here-change-this')
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
-ALLOWED_HOSTS = ['*']  # Для Vercel
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 INSTALLED_APPS = [
@@ -21,7 +21,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'whitenoise.runserver_nostatic',  # Для статических файлов
+    'whitenoise.runserver_nostatic',
     'faculties',
     'departments',
     'specializations',
@@ -38,7 +38,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # WhiteNoise для статики
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -67,18 +67,13 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'unischedule_project.wsgi.application'
 
-# Database - Используем PostgreSQL на Vercel или SQLite локально
-if os.getenv('DATABASE_URL'):
-    DATABASES = {
-        'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
+# Database - временно используем SQLite для теста
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': '/tmp/db.sqlite3',  # Vercel позволяет писать в /tmp
     }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
+}
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -89,8 +84,8 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # Internationalization
-LANGUAGE_CODE = 'uz'
-TIME_ZONE = 'Asia/Tashkent'
+LANGUAGE_CODE = 'en-us'
+TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
@@ -102,11 +97,6 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media files
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
-
-# Login/Logout
-LOGIN_URL = '/admin/login/'
-LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/admin/login/'
+MEDIA_ROOT = '/tmp/media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

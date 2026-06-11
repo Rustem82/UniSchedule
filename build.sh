@@ -1,7 +1,9 @@
 #!/bin/bash
 
-# Сбор статических файлов
+echo "Installing dependencies..."
+pip install -r requirements.txt
+
+echo "Collecting static files..."
 python manage.py collectstatic --noinput
 
-# Выполнение миграций
-python manage.py migrate --noinput
+echo "Build completed!"
