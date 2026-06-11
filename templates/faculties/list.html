@@ -1,0 +1,722 @@
+{% extends 'base.html' %}
+
+{% block title %}Fakultetlar{% endblock %}
+
+{% block extra_css %}
+<style>
+    .faculty-card {
+        transition: all 0.3s;
+        cursor: pointer;
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+
+    .faculty-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+
+    .faculty-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        position: relative;
+    }
+
+    .faculty-stats {
+        display: flex;
+        justify-content: space-around;
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .stat-item {
+        text-align: center;
+    }
+
+    .stat-number {
+        font-size: 20px;
+        font-weight: bold;
+    }
+
+    .stat-label {
+        font-size: 12px;
+        opacity: 0.9;
+    }
+
+    .faculty-body {
+        padding: 20px;
+    }
+
+    .action-buttons {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+    }
+
+    .action-buttons .btn {
+        margin-left: 5px;
+        border-radius: 50%;
+        width: 35px;
+        height: 35px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .view-toggle {
+        cursor: pointer;
+        padding: 8px 15px;
+        border-radius: 20px;
+        transition: all 0.3s;
+    }
+
+    .view-toggle.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .view-toggle:hover:not(.active) {
+        background: #e2e8f0;
+    }
+
+    .grid-view {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 20px;
+    }
+
+    @media (max-width: 768px) {
+        .grid-view {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .table-view {
+        display: block;
+    }
+
+    .badge-department {
+        background: linear-gradient(135deg, #48bb78, #38a169);
+    }
+
+    .quick-stats {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        color: white;
+    }
+
+    .quick-stat-item {
+        text-align: center;
+        border-right: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .quick-stat-item:last-child {
+        border-right: none;
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+
+    .pulse {
+        animation: pulse 0.5s ease;
+    }
+
+    .search-filters {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .export-buttons {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-export {
+        background: #28a745;
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 20px;
+        transition: all 0.3s;
+    }
+
+    .btn-export:hover {
+        background: #218838;
+        transform: translateY(-2px);
+    }
+
+    .btn-excel {
+    background: #1e7e34;
+    }
+
+    .btn-pdf {
+    background: #dc3545;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">
+                <i class="fas fa-university text-primary me-2"></i>Fakultetlar
+            </h1>
+            <p class="text-muted mt-2">
+                <i class="fas fa-chart-line me-1"></i>Jami: <strong>{{ total_count }}</strong> ta fakultet
+                {% if search_query %}
+                | Qidiruv natijasi: "{{ search_query }}"
+                {% endif %}
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <div class="export-buttons me-2">
+                <button onclick="exportToExcel()" class="btn btn-export btn-excel" title="Excel ga export qilish">
+                    <i class="fas fa-file-excel"></i> Excel
+                </button>
+                <button onclick="exportToPDF()" class="btn btn-export btn-pdf" title="PDF ga export qilish">
+                    <i class="fas fa-file-pdf"></i> PDF
+                </button>
+            </div>
+            <a href="{% url 'faculty_create' %}" class="btn btn-custom">
+                <i class="fas fa-plus"></i> Yangi fakultet
+            </a>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="quick-stats mb-4">
+        <div class="row text-center">
+            <div class="col-md-3 col-6">
+                <div class="quick-stat-item">
+                    <i class="fas fa-university fa-2x mb-2"></i>
+                    <h3 class="mb-0">{{ total_count }}</h3>
+                    <small>Jami fakultetlar</small>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="quick-stat-item">
+                    <i class="fas fa-building fa-2x mb-2"></i>
+                    <h3 class="mb-0" id="totalDepartments">0</h3>
+                    <small>Jami kafedralar</small>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="quick-stat-item">
+                    <i class="fas fa-chalkboard-user fa-2x mb-2"></i>
+                    <h3 class="mb-0" id="totalTeachers">0</h3>
+                    <small>Jami o'qituvchilar</small>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="quick-stat-item">
+                    <i class="fas fa-graduation-cap fa-2x mb-2"></i>
+                    <h3 class="mb-0" id="totalStudents">0</h3>
+                    <small>Jami talabalar</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="search-filters">
+        <form method="GET" class="row g-3">
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <input type="text" name="search" class="form-control"
+                           placeholder="Fakultet nomi yoki kodi bo'yicha qidirish..."
+                           value="{{ search_query }}" id="searchInput">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select name="sort" class="form-select" id="sortSelect">
+                    <option value="name">Nomi bo'yicha</option>
+                    <option value="-created_at">Yangi qo'shilgan</option>
+                    <option value="code">Kod bo'yicha</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="per_page" class="form-select" id="perPageSelect">
+                    <option value="10">10 ta</option>
+                    <option value="25">25 ta</option>
+                    <option value="50">50 ta</option>
+                    <option value="100">100 ta</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search"></i> Qidirish
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- View Toggle -->
+    <div class="d-flex justify-content-end mb-3">
+        <div class="btn-group" role="group">
+            <button type="button" class="view-toggle active" onclick="toggleView('grid')" id="gridViewBtn">
+                <i class="fas fa-th-large"></i> Grid
+            </button>
+            <button type="button" class="view-toggle" onclick="toggleView('table')" id="tableViewBtn">
+                <i class="fas fa-table"></i> Table
+            </button>
+        </div>
+    </div>
+
+    <!-- Grid View -->
+    <div id="gridView" class="grid-view">
+        {% for faculty in faculties %}
+        <div class="card faculty-card" data-faculty-id="{{ faculty.id }}">
+            <div class="faculty-header">
+                <div class="action-buttons">
+                    <a href="{% url 'faculty_edit' faculty.id %}" class="btn btn-warning btn-sm" title="Tahrirlash">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <a href="{% url 'faculty_delete' faculty.id %}" class="btn btn-danger btn-sm" title="O'chirish"
+                       onclick="return confirm('O\'chirishni tasdiqlaysizmi?')">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                </div>
+                <div class="text-center">
+                    <i class="fas fa-university fa-3x mb-2"></i>
+                    <h5 class="mb-1">{{ faculty.name }}</h5>
+                    <span class="badge bg-light text-dark">{{ faculty.code }}</span>
+                </div>
+                <div class="faculty-stats">
+                    <div class="stat-item">
+                        <div class="stat-number" id="dept-count-{{ faculty.id }}">0</div>
+                        <div class="stat-label">Kafedralar</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="teacher-count-{{ faculty.id }}">0</div>
+                        <div class="stat-label">O'qituvchilar</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="spec-count-{{ faculty.id }}">0</div>
+                        <div class="stat-label">Mutaxassisliklar</div>
+                    </div>
+                </div>
+            </div>
+            <div class="faculty-body">
+                <p class="text-muted small mb-3">
+                    {{ faculty.description|truncatechars:100|default:"Ma'lumot yo'q" }}
+                </p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">
+                        <i class="fas fa-calendar-alt"></i> {{ faculty.created_at|date:"d.m.Y" }}
+                    </small>
+                    <a href="{% url 'faculty_detail' faculty.id %}" class="btn btn-sm btn-outline-primary">
+                        Batafsil <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info text-center">
+                <i class="fas fa-info-circle fa-2x mb-2"></i>
+                <h5>Ma'lumot topilmadi</h5>
+                <p>Hali hech qanday fakultet mavjud emas. Yangi fakultet qo'shing!</p>
+                <a href="{% url 'faculty_create' %}" class="btn btn-custom mt-2">
+                    <i class="fas fa-plus"></i> Yangi fakultet qo'shish
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Table View -->
+    <div id="tableView" style="display: none;">
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover datatable" id="facultyTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Nomi</th>
+                                <th>Kodi</th>
+                                <th>Kafedralar</th>
+                                <th>O'qituvchilar</th>
+                                <th>Yaratilgan</th>
+                                <th>Amallar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for faculty in faculties %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>
+                                    <a href="{% url 'faculty_detail' faculty.id %}" class="text-decoration-none">
+                                        <strong>{{ faculty.name }}</strong>
+                                    </a>
+                                </td>
+                                <td><span class="badge bg-primary">{{ faculty.code }}</span></td>
+                                <td><span class="badge badge-department" id="table-dept-{{ faculty.id }}">0</span></td>
+                                <td><span class="badge bg-info" id="table-teacher-{{ faculty.id }}">0</span></td>
+                                <td>{{ faculty.created_at|date:"d.m.Y" }}</td>
+                                <td>
+                                    <a href="{% url 'faculty_detail' faculty.id %}" class="btn btn-sm btn-info" title="Ko'rish">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'faculty_edit' faculty.id %}" class="btn btn-sm btn-warning" title="Tahrirlash">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'faculty_delete' faculty.id %}" class="btn btn-sm btn-danger" title="O'chirish"
+                                       onclick="return confirm('O\'chirishni tasdiqlaysizmi?')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center">Ma'lumot topilmadi</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if faculties.has_other_pages %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if faculties.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ faculties.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}">
+                        <i class="fas fa-chevron-left"></i> Oldingi
+                    </a>
+                </li>
+            {% endif %}
+
+            {% for num in faculties.paginator.page_range %}
+                {% if num >= faculties.number|add:'-2' and num <= faculties.number|add:'2' %}
+                    <li class="page-item {% if faculties.number == num %}active{% endif %}">
+                        <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}">
+                            {{ num }}
+                        </a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if faculties.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ faculties.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}">
+                        Keyingi <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
+<script>
+    let currentView = localStorage.getItem('facultyView') || 'grid';
+
+    // Toggle view function
+    function toggleView(view) {
+        currentView = view;
+        localStorage.setItem('facultyView', view);
+
+        if (view === 'grid') {
+            document.getElementById('gridView').style.display = 'grid';
+            document.getElementById('tableView').style.display = 'none';
+            document.getElementById('gridViewBtn').classList.add('active');
+            document.getElementById('tableViewBtn').classList.remove('active');
+        } else {
+            document.getElementById('gridView').style.display = 'none';
+            document.getElementById('tableView').style.display = 'block';
+            document.getElementById('gridViewBtn').classList.remove('active');
+            document.getElementById('tableViewBtn').classList.add('active');
+
+            // Initialize DataTable if not already initialized
+            if (!$.fn.DataTable.isDataTable('#facultyTable')) {
+                $('#facultyTable').DataTable({
+                    language: {
+                        url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/uz.json'
+                    },
+                    pageLength: 10,
+                    responsive: true
+                });
+            }
+        }
+    }
+
+    // Load statistics for each faculty
+    async function loadFacultyStats() {
+        const faculties = document.querySelectorAll('[data-faculty-id]');
+
+        for (const faculty of faculties) {
+            const facultyId = faculty.dataset.facultyId;
+
+            try {
+                // This would be an API call to get real stats
+                // For now, using mock data
+                const deptCount = Math.floor(Math.random() * 10) + 1;
+                const teacherCount = Math.floor(Math.random() * 50) + 10;
+                const specCount = Math.floor(Math.random() * 5) + 1;
+
+                // Update grid view
+                const deptElement = document.getElementById(`dept-count-${facultyId}`);
+                const teacherElement = document.getElementById(`teacher-count-${facultyId}`);
+                const specElement = document.getElementById(`spec-count-${facultyId}`);
+
+                if (deptElement) deptElement.textContent = deptCount;
+                if (teacherElement) teacherElement.textContent = teacherCount;
+                if (specElement) specElement.textContent = specCount;
+
+                // Update table view
+                const tableDept = document.getElementById(`table-dept-${facultyId}`);
+                const tableTeacher = document.getElementById(`table-teacher-${facultyId}`);
+
+                if (tableDept) tableDept.textContent = deptCount;
+                if (tableTeacher) tableTeacher.textContent = teacherCount;
+
+                // Update total counters
+                updateTotalStats(deptCount, teacherCount, specCount);
+
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+    }
+
+    let totalDepts = 0, totalTeachers = 0, totalSpecs = 0;
+
+    function updateTotalStats(dept, teacher, spec) {
+        totalDepts += dept;
+        totalTeachers += teacher;
+        totalSpecs += spec;
+
+        document.getElementById('totalDepartments').textContent = totalDepts;
+        document.getElementById('totalTeachers').textContent = totalTeachers;
+        document.getElementById('totalStudents').textContent = Math.floor(totalTeachers * 15);
+    }
+
+    // Export to Excel
+    function exportToExcel() {
+        const table = document.getElementById('facultyTable');
+        const workbook = XLSX.utils.book_new();
+        const worksheet = XLSX.utils.table_to_sheet(table, { raw: true });
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Fakultetlar');
+        XLSX.writeFile(workbook, `fakultetlar_${new Date().toISOString().split('T')[0]}.xlsx`);
+
+        Swal.fire({
+            icon: 'success',
+            title: 'Muvaffaqiyatli!',
+            text: 'Fayl Excel formatida saqlandi',
+            timer: 2000,
+            showConfirmButton: false
+        });
+    }
+
+    // Export to PDF
+    function exportToPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        doc.text('Fakultetlar ro\'yxati', 14, 10);
+        doc.text(`Sana: ${new Date().toLocaleDateString('uz-UZ')}`, 14, 20);
+
+        const table = document.getElementById('facultyTable');
+        const rows = [];
+        const headers = ['#', 'Nomi', 'Kodi', 'Kafedralar', 'O\'qituvchilar', 'Yaratilgan'];
+
+        // Get table data
+        const tableRows = table.querySelectorAll('tbody tr');
+        tableRows.forEach((row, index) => {
+            const cells = row.querySelectorAll('td');
+            if (cells.length > 0) {
+                rows.push([
+                    index + 1,
+                    cells[0]?.textContent || '',
+                    cells[1]?.textContent || '',
+                    cells[2]?.textContent || '',
+                    cells[3]?.textContent || '',
+                    cells[4]?.textContent || ''
+                ]);
+            }
+        });
+
+        doc.autoTable({
+            head: [headers],
+            body: rows,
+            startY: 30,
+            theme: 'striped',
+            headStyles: { fillColor: [102, 126, 234] }
+        });
+
+        doc.save(`fakultetlar_${new Date().toISOString().split('T')[0]}.pdf`);
+
+        Swal.fire({
+            icon: 'success',
+            title: 'Muvaffaqiyatli!',
+            text: 'Fayl PDF formatida saqlandi',
+            timer: 2000,
+            showConfirmButton: false
+        });
+    }
+
+    // Search with animation
+    document.getElementById('searchInput')?.addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        const cards = document.querySelectorAll('.faculty-card');
+
+        cards.forEach(card => {
+            const name = card.querySelector('h5')?.textContent.toLowerCase();
+            const code = card.querySelector('.badge')?.textContent.toLowerCase();
+
+            if (name?.includes(searchTerm) || code?.includes(searchTerm)) {
+                card.style.display = 'block';
+                card.classList.add('pulse');
+                setTimeout(() => card.classList.remove('pulse'), 500);
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    });
+
+    // Sort functionality
+    document.getElementById('sortSelect')?.addEventListener('change', function(e) {
+        const sortBy = e.target.value;
+        const grid = document.getElementById('gridView');
+        const cards = Array.from(grid.children);
+
+        cards.sort((a, b) => {
+            if (sortBy === 'name') {
+                const nameA = a.querySelector('h5')?.textContent || '';
+                const nameB = b.querySelector('h5')?.textContent || '';
+                return nameA.localeCompare(nameB);
+            } else if (sortBy === 'code') {
+                const codeA = a.querySelector('.badge')?.textContent || '';
+                const codeB = b.querySelector('.badge')?.textContent || '';
+                return codeA.localeCompare(codeB);
+            } else {
+                const dateA = a.querySelector('.text-muted small')?.textContent || '';
+                const dateB = b.querySelector('.text-muted small')?.textContent || '';
+                return dateB.localeCompare(dateA);
+            }
+        });
+
+        cards.forEach(card => grid.appendChild(card));
+    });
+
+    // Per page functionality
+    document.getElementById('perPageSelect')?.addEventListener('change', function(e) {
+        const perPage = parseInt(e.target.value);
+        const cards = document.querySelectorAll('.faculty-card');
+        let visibleCount = 0;
+
+        cards.forEach((card, index) => {
+            if (index < perPage) {
+                card.style.display = 'block';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        // Show load more button if needed
+        if (visibleCount < cards.length) {
+            showLoadMoreButton();
+        }
+    });
+
+    function showLoadMoreButton() {
+        let loadMoreBtn = document.getElementById('loadMoreBtn');
+        if (!loadMoreBtn) {
+            loadMoreBtn = document.createElement('button');
+            loadMoreBtn.id = 'loadMoreBtn';
+            loadMoreBtn.className = 'btn btn-custom mt-3';
+            loadMoreBtn.innerHTML = '<i class="fas fa-download"></i> Ko\'proq yuklash';
+            loadMoreBtn.onclick = loadMore;
+            document.getElementById('gridView').after(loadMoreBtn);
+        }
+    }
+
+    function loadMore() {
+        const hiddenCards = document.querySelectorAll('.faculty-card[style*="display: none"]');
+        let count = 0;
+        hiddenCards.forEach(card => {
+            if (count < 10) {
+                card.style.display = 'block';
+                count++;
+            }
+        });
+
+        if (document.querySelectorAll('.faculty-card[style*="display: none"]').length === 0) {
+            document.getElementById('loadMoreBtn')?.remove();
+        }
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+        toggleView(currentView);
+        loadFacultyStats();
+
+        // Add animation to cards
+        const cards = document.querySelectorAll('.faculty-card');
+        cards.forEach((card, index) => {
+            setTimeout(() => {
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'n') {
+                e.preventDefault();
+                window.location.href = "{% url 'faculty_create' %}";
+            }
+            if (e.ctrlKey && e.key === 'f') {
+                e.preventDefault();
+                document.getElementById('searchInput')?.focus();
+            }
+        });
+
+        // Show welcome notification
+        if (!localStorage.getItem('welcomeShown')) {
+            Swal.fire({
+                title: 'Fakultetlar bo\'limiga xush kelibsiz!',
+                html: `
+                    <div class="text-start">
+                        <p><i class="fas fa-plus-circle text-success"></i> Ctrl+N - Yangi fakultet qo'shish</p>
+                        <p><i class="fas fa-search text-primary"></i> Ctrl+F - Qidirish</p>
+                        <p><i class="fas fa-table text-info"></i> Grid/Table ko'rinishi</p>
+                    </div>
+                `,
+                icon: 'info',
+                confirmButtonColor: '#667eea',
+                timer: 5000
+            });
+            localStorage.setItem('welcomeShown', 'true');
+        }
+    });
+</script>
+{% endblock %}

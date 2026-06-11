@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Yuklama hisoboti{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-0"><i class="fas fa-chart-bar text-primary me-2"></i>Yuklama hisoboti</h1>
+        <p class="text-muted mt-2">Kafedralar bo'yicha umumiy statistika</p>
+    </div>
+    <a href="{% url 'workload_list' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Orqaga
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-primary">
+                    <tr>
+                        <th>#</th>
+                        <th>Kafedra</th>
+                        <th>O'qituvchilar soni</th>
+                        <th>Yuklamalar soni</th>
+                        <th>Jami soatlar</th>
+                        <th>O'rtacha soat</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for data in summary_data %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td><strong>{{ data.department.name }}</strong></td>
+                        <td>{{ data.teacher_count }}</td>
+                        <td>{{ data.workload_count }}</td>
+                        <td><strong>{{ data.total_hours }}</strong></td>
+                        <td>{% widthratio data.total_hours data.teacher_count 1 %}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="text-center">Ma'lumot topilmadi</td></tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot class="table-secondary">
+                    <tr>
+                        <th colspan="4">JAMI:</th>
+                        <th><strong>{{ total_overall_hours }}</strong></th>
+                        <th></th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

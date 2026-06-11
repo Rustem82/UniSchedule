@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+
+{% block title %}Fanlar bazasi{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-0">
+            <i class="fas fa-book text-primary me-2"></i>Fanlar bazasi
+        </h1>
+        <p class="text-muted mt-2">
+            Jami: <strong>{{ total_count }}</strong> ta fan |
+            Kreditlar: <strong>{{ total_credits }}</strong> |
+            Soatlar: <strong>{{ total_hours }}</strong>
+        </p>
+    </div>
+    <a href="{% url 'subject_create' %}" class="btn btn-custom">
+        <i class="fas fa-plus"></i> Yangi fan
+    </a>
+</div>
+
+<!-- Search and Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <input type="text" name="search" class="form-control"
+                           placeholder="Fan nomi, kodi yoki kafedra bo'yicha..."
+                           value="{{ search_query }}">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <select name="department" class="form-select">
+                    <option value="">Barcha kafedralar</option>
+                    {% for dept in departments %}
+                    <option value="{{ dept.id }}" {% if department_filter|add:"0" == dept.id %}selected{% endif %}>
+                        {{ dept.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="type" class="form-select">
+                    <option value="">Barcha fan turlari</option>
+                    {% for value, label in subject_types %}
+                    <option value="{{ value }}" {% if type_filter == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="semester" class="form-select">
+                    <option value="">Barcha semestrlar</option>
+                    {% for value, label in semesters %}
+                    <option value="{{ value }}" {% if semester_filter|add:"0" == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <a href="{% url 'subject_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-sync-alt"></i>
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Subjects Table -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Fan nomi</th>
+                        <th>Kodi</th>
+                        <th>Kafedra</th>
+                        <th>Fan turi</th>
+                        <th>Semestr</th>
+                        <th>Kredit</th>
+                        <th>Jami soat</th>
+                        <th>Amallar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for subject in subjects %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                            <a href="{% url 'subject_detail' subject.id %}" class="text-decoration-none">
+                                <strong>{{ subject.name }}</strong>
+                            </a>
+                         </td>
+                        <td><span class="badge bg-primary">{{ subject.code }}</span></td>
+                        <td>{{ subject.department.name }}</td>
+                        <td>
+                            <span class="badge {% if subject.subject_type == 'core' %}bg-danger{% elif subject.subject_type == 'professional' %}bg-success{% else %}bg-info{% endif %}">
+                                {{ subject.get_subject_type_display }}
+                            </span>
+                         </td>
+                        <td><span class="badge bg-warning">{{ subject.semester }}-semestr</span></td>
+                        <td>{{ subject.credits }}</td>
+                        <td>{{ subject.total_hours }}</td>
+                        <td>
+                            <a href="{% url 'subject_detail' subject.id %}" class="btn btn-sm btn-info" title="Ko'rish">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{% url 'subject_edit' subject.id %}" class="btn btn-sm btn-warning" title="Tahrirlash">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'subject_delete' subject.id %}" class="btn btn-sm btn-danger" title="O'chirish"
+                               onclick="return confirm('O\'chirishni tasdiqlaysizmi?')">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                         </td>
+                     </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center">
+                            <div class="py-4">
+                                <i class="fas fa-book fa-3x text-muted mb-3"></i>
+                                <h5>Ma'lumot topilmadi</h5>
+                                <p>Hali hech qanday fan mavjud emas.</p>
+                                <a href="{% url 'subject_create' %}" class="btn btn-custom mt-2">
+                                    <i class="fas fa-plus"></i> Yangi fan qo'shish
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if subjects.has_other_pages %}
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if subjects.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ subjects.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if department_filter %}&department={{ department_filter }}{% endif %}{% if type_filter %}&type={{ type_filter }}{% endif %}{% if semester_filter %}&semester={{ semester_filter }}{% endif %}">
+                            <i class="fas fa-chevron-left"></i> Oldingi
+                        </a>
+                    </li>
+                {% endif %}
+
+                {% for num in subjects.paginator.page_range %}
+                    {% if num >= subjects.number|add:'-2' and num <= subjects.number|add:'2' %}
+                        <li class="page-item {% if subjects.number == num %}active{% endif %}">
+                            <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if department_filter %}&department={{ department_filter }}{% endif %}{% if type_filter %}&type={{ type_filter }}{% endif %}{% if semester_filter %}&semester={{ semester_filter }}{% endif %}">
+                                {{ num }}
+                            </a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if subjects.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ subjects.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if department_filter %}&department={{ department_filter }}{% endif %}{% if type_filter %}&type={{ type_filter }}{% endif %}{% if semester_filter %}&semester={{ semester_filter }}{% endif %}">
+                            Keyingi <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

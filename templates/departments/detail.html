@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ department.name }}{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'department_list' %}">Kafedralar</a></li>
+            <li class="breadcrumb-item active">{{ department.name }}</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">{{ department.name }}</h4>
+                <div>
+                    <a href="{% url 'department_edit' department.id %}" class="btn btn-warning btn-sm">
+                        <i class="fas fa-edit"></i> Tahrirlash
+                    </a>
+                    <a href="{% url 'department_delete' department.id %}" class="btn btn-danger btn-sm">
+                        <i class="fas fa-trash"></i> O'chirish
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th style="width: 120px;">Kodi:</th>
+                                <td><span class="badge bg-primary">{{ department.code }}</span></td>
+                            </tr>
+                            <tr>
+                                <th>Fakultet:</th>
+                                <td>
+                                    <a href="{% url 'faculty_detail' department.faculty.id %}">
+                                        {{ department.faculty.name }}
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Kafedra mudiri:</th>
+                                <td>{{ department.head_name|default:"-" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Telefon:</th>
+                                <td>{{ department.phone|default:"-" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Email:</th>
+                                <td>{{ department.email|default:"-" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Yaratilgan:</th>
+                                <td>{{ department.created_at|date:"d.m.Y H:i" }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Tavsif:</h6>
+                        <p>{{ department.description|default:"Ma'lumot yo'q" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chalkboard-user me-2"></i>O'qituvchilar
+                    <span class="badge bg-info float-end">{{ teachers.count }}</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if teachers %}
+                    <div class="list-group">
+                        {% for teacher in teachers %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ teacher.user.get_full_name|default:teacher.user.username }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ teacher.get_position_display }}</small>
+                                </div>
+                                <span class="badge bg-secondary">{{ teacher.get_academic_degree_display }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center py-3">
+                        <i class="fas fa-users fa-2x mb-2"></i><br>
+                        Hali o'qituvchilar mavjud emas
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

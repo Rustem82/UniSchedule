@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}Xonani o'chirish{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Xonani o'chirish</h4>
+            </div>
+            <div class="card-body text-center">
+                <i class="fas fa-door-open fa-4x text-danger mb-3"></i>
+                <h5>Siz <strong>{{ room }}</strong> xonasini o'chirmoqchisiz.</h5>
+                <form method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Ha, o'chirish</button>
+                    <a href="{% url 'room_list' %}" class="btn btn-secondary">Bekor qilish</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

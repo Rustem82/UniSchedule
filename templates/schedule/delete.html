@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}Darsni o'chirish{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Darsni o'chirish</h4>
+            </div>
+            <div class="card-body text-center">
+                <i class="fas fa-calendar-times fa-4x text-danger mb-3"></i>
+                <h5>Siz ushbu darsni o'chirmoqchisiz:</h5>
+                <p><strong>{{ schedule.group.name }} - {{ schedule.subject.name }}</strong></p>
+                <p>{{ schedule.get_day_of_week_display }}, {{ schedule.get_lesson_number_display }}</p>
+                <form method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Ha, o'chirish</button>
+                    <a href="{% url 'schedule_list' %}" class="btn btn-secondary">Bekor qilish</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

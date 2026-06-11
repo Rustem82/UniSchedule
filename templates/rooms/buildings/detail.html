@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ building.name }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h4>{{ building.name }}</h4>
+    </div>
+    <div class="card-body">
+        <p><strong>Kodi:</strong> {{ building.code }}</p>
+        <p><strong>Manzil:</strong> {{ building.address }}</p>
+        <p><strong>Qavatlar:</strong> {{ building.floors }}</p>
+        <p><strong>Xonalar soni:</strong> {{ total_rooms }}</p>
+        <h5 class="mt-4">Xonalar ro'yxati:</h5>
+        <ul>
+            {% for room in rooms %}
+            <li>{{ room.number }} - {{ room.get_room_type_display }} ({{ room.capacity }} o'rin)</li>
+            {% empty %}
+            <li>Hali xonalar mavjud emas</li>
+            {% endfor %}
+        </ul>
+        <a href="{% url 'building_edit' building.id %}" class="btn btn-warning">Tahrirlash</a>
+        <a href="{% url 'building_list' %}" class="btn btn-secondary">Orqaga</a>
+    </div>
+</div>
+{% endblock %}

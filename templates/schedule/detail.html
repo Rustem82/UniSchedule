@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}Dars tafsilotlari{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h4>Dars tafsilotlari</h4>
+    </div>
+    <div class="card-body">
+        <table class="table">
+            <tr><th style="width: 200px;">Guruh:</th><td>{{ schedule.group.name }}</td></tr>
+            <tr><th>Fan:</th><td>{{ schedule.subject.name }}</td></tr>
+            <tr><th>O'qituvchi:</th><td>{{ schedule.teacher.get_full_name }}</td></tr>
+            <tr><th>Xona:</th><td>{{ schedule.room }}</td></tr>
+            <tr><th>Hafta kuni:</th><td>{{ schedule.get_day_of_week_display }}</td></tr>
+            <tr><th>Vaqt:</th><td>{{ schedule.get_lesson_number_display }}</td></tr>
+            <tr><th>Dars turi:</th><td>{{ schedule.get_lesson_type_display }}</td></tr>
+            <tr><th>Hafta turi:</th><td>{{ schedule.get_week_type_display }}</td></tr>
+            <tr><th>Podgruppa:</th><td>{{ schedule.subgroup }}</td></tr>
+            <tr><th>O'quv yili:</th><td>{{ schedule.academic_year }}</td></tr>
+            <tr><th>Semestr:</th><td>{{ schedule.semester }}-semestr</td></tr>
+        </table>
+        <a href="{% url 'schedule_edit' schedule.id %}" class="btn btn-warning">Tahrirlash</a>
+        <a href="{% url 'schedule_list' %}" class="btn btn-secondary">Orqaga</a>
+    </div>
+</div>
+{% endblock %}

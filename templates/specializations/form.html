@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-graduation-cap me-2"></i>{{ title }}
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="name" class="form-label">Mutaxassislik nomi *</label>
+                            <input type="text" class="form-control" id="name" name="name" 
+                                   value="{{ specialization.name|default:'' }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="code" class="form-label">Kodi *</label>
+                            <input type="text" class="form-control" id="code" name="code" 
+                                   value="{{ specialization.code|default:'' }}" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="faculty" class="form-label">Fakultet *</label>
+                        <select class="form-select" id="faculty" name="faculty" required>
+                            <option value="">Tanlang</option>
+                            {% for faculty in faculties %}
+                            <option value="{{ faculty.id }}" 
+                                {% if specialization.faculty.id == faculty.id %}selected{% endif %}>
+                                {{ faculty.name }} ({{ faculty.code }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="degree_type" class="form-label">Daraja *</label>
+                            <select class="form-select" id="degree_type" name="degree_type" required>
+                                <option value="">Tanlang</option>
+                                {% for value, label in degree_types %}
+                                <option value="{{ value }}" {% if specialization.degree_type == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="education_type" class="form-label">Ta'lim shakli *</label>
+                            <select class="form-select" id="education_type" name="education_type" required>
+                                <option value="">Tanlang</option>
+                                {% for value, label in education_types %}
+                                <option value="{{ value }}" {% if specialization.education_type == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="duration" class="form-label">Muddat (oy) *</label>
+                            <input type="number" class="form-control" id="duration" name="duration" 
+                                   value="{{ specialization.duration|default:48 }}" required>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="credits" class="form-label">Kreditlar</label>
+                            <input type="number" class="form-control" id="credits" name="credits" 
+                                   value="{{ specialization.credits|default:0 }}">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Tavsif</label>
+                        <textarea class="form-control" id="description" name="description" rows="4">{{ specialization.description|default:'' }}</textarea>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <button type="submit" class="btn btn-custom">
+                            <i class="fas fa-save me-2"></i>Saqlash
+                        </button>
+                        <a href="{% url 'specialization_list' %}" class="btn btn-secondary">
+                            <i class="fas fa-times me-2"></i>Bekor qilish
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

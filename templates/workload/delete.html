@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}Yuklamani o'chirish{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Yuklamani o'chirish</h4>
+            </div>
+            <div class="card-body text-center">
+                <i class="fas fa-chart-line fa-4x text-danger mb-3"></i>
+                <h5>Siz ushbu yuklamani o'chirmoqchisiz:</h5>
+                <p><strong>{{ workload.teacher.get_full_name }} - {{ workload.subject.name }}</strong></p>
+                <p>{{ workload.group.name }}, {{ workload.semester }}-semestr, {{ workload.total_hours }} soat</p>
+                <form method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Ha, o'chirish</button>
+                    <a href="{% url 'workload_list' %}" class="btn btn-secondary">Bekor qilish</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

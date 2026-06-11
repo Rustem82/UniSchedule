@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-calendar-plus me-2"></i>{{ title }}</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Guruh *</label>
+                            <select name="group" class="form-select" required>
+                                <option value="">Tanlang</option>
+                                {% for g in groups %}<option value="{{ g.id }}" {% if schedule.group.id == g.id %}selected{% endif %}>{{ g.name }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Fan *</label>
+                            <select name="subject" class="form-select" required>
+                                <option value="">Tanlang</option>
+                                {% for s in subjects %}<option value="{{ s.id }}" {% if schedule.subject.id == s.id %}selected{% endif %}>{{ s.name }}</option>{% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <label class="form-label">O'qituvchi *</label>
+                            <select name="teacher" class="form-select" required>
+                                <option value="">Tanlang</option>
+                                {% for t in teachers %}<option value="{{ t.id }}" {% if schedule.teacher.id == t.id %}selected{% endif %}>{{ t.get_full_name }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Xona *</label>
+                            <select name="room" class="form-select" required>
+                                <option value="">Tanlang</option>
+                                {% for r in rooms %}<option value="{{ r.id }}" {% if schedule.room.id == r.id %}selected{% endif %}>{{ r }}</option>{% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Hafta kuni *</label>
+                            <select name="day_of_week" class="form-select" required>
+                                {% for v, l in days %}<option value="{{ v }}" {% if schedule.day_of_week == v %}selected{% endif %}>{{ l }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Juftlik *</label>
+                            <select name="lesson_number" class="form-select" required>
+                                {% for v, l in lesson_times %}<option value="{{ v }}" {% if schedule.lesson_number == v %}selected{% endif %}>{{ l }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Dars turi *</label>
+                            <select name="lesson_type" class="form-select" required>
+                                {% for v, l in lesson_types %}<option value="{{ v }}" {% if schedule.lesson_type == v %}selected{% endif %}>{{ l }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Hafta turi</label>
+                            <select name="week_type" class="form-select">
+                                {% for v, l in week_types %}<option value="{{ v }}" {% if schedule.week_type == v %}selected{% endif %}>{{ l }}</option>{% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Podgruppa</label>
+                            <input type="number" name="subgroup" class="form-control" value="{{ schedule.subgroup|default:1 }}" min="1">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">O'quv yili *</label>
+                            <input type="text" name="academic_year" class="form-control" value="{{ schedule.academic_year|default:'2024-2025' }}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Semestr *</label>
+                            <select name="semester" class="form-select" required>
+                                <option value="1" {% if schedule.semester == 1 %}selected{% endif %}>1-semestr</option>
+                                <option value="2" {% if schedule.semester == 2 %}selected{% endif %}>2-semestr</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-custom">Saqlash</button>
+                        <a href="{% url 'schedule_list' %}" class="btn btn-secondary">Bekor qilish</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

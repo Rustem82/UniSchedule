@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% load schedule_filters %}
+
+{% block title %}Dars jadvali{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-0"><i class="fas fa-calendar-alt text-primary me-2"></i>Dars jadvali</h1>
+        <p class="text-muted mt-2">Jami: <strong>{{ total_count }}</strong> ta dars</p>
+    </div>
+    <a href="{% url 'schedule_create' %}" class="btn btn-custom"><i class="fas fa-plus"></i> Yangi dars</a>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <select name="group" class="form-select">
+                    <option value="">Barcha guruhlar</option>
+                    {% for g in groups %}<option value="{{ g.id }}" {% if group_filter|add:"0" == g.id %}selected{% endif %}>{{ g.name }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="day" class="form-select">
+                    <option value="">Barcha kunlar</option>
+                    {% for v, l in days %}<option value="{{ v }}" {% if day_filter|add:"0" == v %}selected{% endif %}>{{ l }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="teacher" class="form-select">
+                    <option value="">Barcha o'qituvchilar</option>
+                    {% for t in teachers %}<option value="{{ t.id }}" {% if teacher_filter|add:"0" == t.id %}selected{% endif %}>{{ t.get_full_name }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <input type="text" name="search" class="form-control" placeholder="Fan nomi bo'yicha..." value="{{ search_query }}">
+            </div>
+            <div class="col-md-1">
+                <button type="submit" class="btn btn-primary w-100"><i class="fas fa-search"></i></button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Weekly Schedule Table -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered text-center">
+                <thead class="table-primary">
+                    <tr>
+                        <th style="width: 100px;">Vaqt</th>
+                        {% for v, l in days %}
+                        <th>{{ l }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lesson_num, lesson_time in lesson_times %}
+                    <tr>
+                        <td class="fw-bold">{{ lesson_time }}</td>
+                        {% for day_num, day_name in days %}
+                        <td style="min-width: 150px;">
+                            {% with schedule=weekly_schedule|get_item:day_num|get_item:lesson_num %}
+                                {% if schedule %}
+                                    <div class="mb-1"><strong>{{ schedule.subject.name }}</strong></div>
+                                    <div class="small">{{ schedule.group.name }}</div>
+                                    <div class="small text-muted">{{ schedule.teacher.get_full_name|truncatechars:20 }}</div>
+                                    <div class="small">{{ schedule.room }}</div>
+                                    <span class="badge bg-secondary">{{ schedule.get_lesson_type_display }}</span>
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            {% endwith %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Add custom filter for dictionary access
+if (!Object.prototype.hasOwnProperty('get_item')) {
+    Object.prototype.get_item = function(key) {
+        return this[key];
+    };
+}
+</script>
+{% endblock %}

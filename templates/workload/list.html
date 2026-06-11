@@ -1,0 +1,273 @@
+{% extends 'base.html' %}
+
+{% block title %}O'quv yuklamasi{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-0">
+            <i class="fas fa-chart-line text-primary me-2"></i>O'quv yuklamasi
+        </h1>
+        <p class="text-muted mt-2">
+            <i class="fas fa-flag-checkered me-1"></i>Jami: <strong>{{ total_count }}</strong> ta yuklama
+        </p>
+    </div>
+    <div>
+        <a href="{% url 'workload_summary' %}" class="btn btn-info me-2">
+            <i class="fas fa-chart-bar"></i> Hisobot
+        </a>
+        <a href="{% url 'workload_create' %}" class="btn btn-custom">
+            <i class="fas fa-plus"></i> Yangi yuklama
+        </a>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <input type="text" name="search" class="form-control"
+                           placeholder="O'qituvchi yoki fan..."
+                           value="{{ search_query }}">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <select name="department" class="form-select">
+                    <option value="">Barcha kafedralar</option>
+                    {% for d in departments %}
+                    <option value="{{ d.id }}" {% if department_filter|add:"0" == d.id %}selected{% endif %}>
+                        {{ d.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="teacher" class="form-select">
+                    <option value="">Barcha o'qituvchilar</option>
+                    {% for t in teachers %}
+                    <option value="{{ t.id }}" {% if teacher_filter|add:"0" == t.id %}selected{% endif %}>
+                        {{ t.get_full_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="year" class="form-select">
+                    <option value="">Barcha yillar</option>
+                    {% for y in academic_years %}
+                    <option value="{{ y }}" {% if year_filter == y %}selected{% endif %}>
+                        {{ y }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="semester" class="form-select">
+                    <option value="">Barcha semestrlar</option>
+                    {% for v, l in semesters %}
+                    <option value="{{ v }}" {% if semester_filter|add:"0" == v %}selected{% endif %}>
+                        {{ l }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-1">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-6 col-lg-3">
+        <div class="card bg-primary text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-0">Jami soatlar</h6>
+                        <h2 class="my-2">{{ total_hours }}</h2>
+                        <small>Umumiy yuklama</small>
+                    </div>
+                    <i class="fas fa-clock fa-3x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+        <div class="card bg-info text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-0">Ma'ruza soatlari</h6>
+                        <h2 class="my-2">{{ total_lecture_hours }}</h2>
+                        <small>Auditoriya darslari</small>
+                    </div>
+                    <i class="fas fa-chalkboard fa-3x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+        <div class="card bg-success text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-0">Amaliy soatlar</h6>
+                        <h2 class="my-2">{{ total_practical_hours }}</h2>
+                        <small>Amaliy mashg'ulotlar</small>
+                    </div>
+                    <i class="fas fa-users fa-3x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+        <div class="card bg-warning text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-0">Laboratoriya soatlari</h6>
+                        <h2 class="my-2">{{ total_lab_hours }}</h2>
+                        <small>Laboratoriya ishlari</small>
+                    </div>
+                    <i class="fas fa-flask fa-3x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Workload Table -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-list me-2"></i>Yuklamalar ro'yxati
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>O'qituvchi</th>
+                        <th>Fan</th>
+                        <th>Guruh</th>
+                        <th>Semestr</th>
+                        <th>O'quv yili</th>
+                        <th class="text-center">Ma'ruza</th>
+                        <th class="text-center">Amaliy</th>
+                        <th class="text-center">Lab</th>
+                        <th class="text-center">Jami</th>
+                        <th class="text-center">Amallar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for w in workloads %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                            <a href="{% url 'workload_teacher_view' w.teacher.id %}" class="text-decoration-none">
+                                <strong>{{ w.teacher.get_full_name }}</strong>
+                            </a>
+                            <br>
+                            <small class="text-muted">{{ w.teacher.department.name|default:"-" }}</small>
+                        </td>
+                        <td>{{ w.subject.name }}</td>
+                        <td>
+                            <span class="badge bg-secondary">{{ w.group.name }}</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-info">{{ w.semester }}-semestr</span>
+                        </td>
+                        <td>{{ w.academic_year }}</td>
+                        <td class="text-center">{{ w.lecture_hours }}</td>
+                        <td class="text-center">{{ w.practical_hours }}</td>
+                        <td class="text-center">{{ w.lab_hours }}</td>
+                        <td class="text-center">
+                            <strong class="text-primary">{{ w.total_hours }}</strong>
+                        </td>
+                        <td class="text-center">
+                            <div class="btn-group" role="group">
+                                <a href="{% url 'workload_detail' w.id %}" class="btn btn-sm btn-info" title="Ko'rish">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'workload_edit' w.id %}" class="btn btn-sm btn-warning" title="Tahrirlash">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'workload_delete' w.id %}" class="btn btn-sm btn-danger" title="O'chirish"
+                                   onclick="return confirm('O\'chirishni tasdiqlaysizmi?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="11" class="text-center py-5">
+                            <div class="py-4">
+                                <i class="fas fa-chart-line fa-4x text-muted mb-3"></i>
+                                <h5 class="text-muted">Ma'lumot topilmadi</h5>
+                                <p class="text-muted">Hali hech qanday o'quv yuklamasi mavjud emas.</p>
+                                <a href="{% url 'workload_create' %}" class="btn btn-custom mt-2">
+                                    <i class="fas fa-plus"></i> Yangi yuklama qo'shish
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot class="table-secondary">
+                    <tr>
+                        <th colspan="6" class="text-end">Jami:</th>
+                        <th class="text-center">{{ total_lecture_hours }}</th>
+                        <th class="text-center">{{ total_practical_hours }}</th>
+                        <th class="text-center">{{ total_lab_hours }}</th>
+                        <th class="text-center"><strong>{{ total_hours }}</strong></th>
+                        <th></th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if workloads.has_other_pages %}
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if workloads.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ workloads.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if department_filter %}&department={{ department_filter }}{% endif %}{% if teacher_filter %}&teacher={{ teacher_filter }}{% endif %}{% if year_filter %}&year={{ year_filter }}{% endif %}{% if semester_filter %}&semester={{ semester_filter }}{% endif %}">
+                            <i class="fas fa-chevron-left"></i> Oldingi
+                        </a>
+                    </li>
+                {% endif %}
+
+                {% for num in workloads.paginator.page_range %}
+                    {% if num >= workloads.number|add:'-2' and num <= workloads.number|add:'2' %}
+                        <li class="page-item {% if workloads.number == num %}active{% endif %}">
+                            <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if department_filter %}&department={{ department_filter }}{% endif %}{% if teacher_filter %}&teacher={{ teacher_filter }}{% endif %}{% if year_filter %}&year={{ year_filter }}{% endif %}{% if semester_filter %}&semester={{ semester_filter }}{% endif %}">
+                                {{ num }}
+                            </a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if workloads.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ workloads.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if department_filter %}&department={{ department_filter }}{% endif %}{% if teacher_filter %}&teacher={{ teacher_filter }}{% endif %}{% if year_filter %}&year={{ year_filter }}{% endif %}{% if semester_filter %}&semester={{ semester_filter }}{% endif %}">
+                            Keyingi <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

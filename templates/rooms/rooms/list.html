@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Xonalar{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-0"><i class="fas fa-door-open text-primary me-2"></i>Xonalar</h1>
+        <p class="text-muted mt-2">Jami: <strong>{{ total_count }}</strong> ta xona | Sig'imi: <strong>{{ total_capacity }}</strong></p>
+    </div>
+    <a href="{% url 'room_create' %}" class="btn btn-custom"><i class="fas fa-plus"></i> Yangi xona</a>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-4"><input type="text" name="search" class="form-control" placeholder="Xona raqami bo'yicha..." value="{{ search_query }}"></div>
+            <div class="col-md-3">
+                <select name="building" class="form-select">
+                    <option value="">Barcha binolar</option>
+                    {% for b in buildings %}<option value="{{ b.id }}" {% if building_filter|add:"0" == b.id %}selected{% endif %}>{{ b.name }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="room_type" class="form-select">
+                    <option value="">Barcha turlar</option>
+                    {% for v, l in room_types %}<option value="{{ v }}" {% if room_type_filter == v %}selected{% endif %}>{{ l }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2"><button type="submit" class="btn btn-primary w-100"><i class="fas fa-search"></i></button></div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead><tr><th>#</th><th>Xona</th><th>Bino</th><th>Tur</th><th>Qavat</th><th>Sig'imi</th><th>Jihozlar</th><th>Holat</th><th>Amallar</th></tr></thead>
+                <tbody>
+                    {% for room in rooms %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td><strong>{{ room.number }}</strong></td>
+                        <td>{{ room.building.name }}</td>
+                        <td><span class="badge bg-info">{{ room.get_room_type_display }}</span></td>
+                        <td>{{ room.floor }}-qavat</td>
+                        <td>{{ room.capacity }}</td>
+                        <td>{% for eq in room.get_equipment_list %}<span class="badge bg-secondary me-1">{{ eq }}</span>{% endfor %}</td>
+                        <td>{% if room.is_available %}<span class="badge bg-success">Mavjud</span>{% else %}<span class="badge bg-danger">Band</span>{% endif %}</td>
+                        <td>
+                            <a href="{% url 'room_detail' room.id %}" class="btn btn-sm btn-info"><i class="fas fa-eye"></i></a>
+                            <a href="{% url 'room_edit' room.id %}" class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></a>
+                            <a href="{% url 'room_delete' room.id %}" class="btn btn-sm btn-danger" onclick="return confirm('O\'chirishni tasdiqlaysizmi?')"><i class="fas fa-trash"></i></a>
+                        </td>
+                    </tr>
+                    {% empty %}<tr><td colspan="9" class="text-center py-5">Ma'lumot topilmadi</td></tr>{% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

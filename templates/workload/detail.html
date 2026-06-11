@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Yuklama tafsilotlari{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h4>O'quv yuklamasi tafsilotlari</h4>
+    </div>
+    <div class="card-body">
+        <table class="table">
+            <tr><th style="width: 200px;">O'qituvchi:</th><td>{{ workload.teacher.get_full_name }}</td></tr>
+            <tr><th>Fan:</th><td>{{ workload.subject.name }}</td></tr>
+            <tr><th>Guruh:</th><td>{{ workload.group.name }}</td></tr>
+            <tr><th>Semestr:</th><td>{{ workload.semester }}-semestr</td></tr>
+            <tr><th>Ma'ruza soatlari:</th><td>{{ workload.lecture_hours }}</td></tr>
+            <tr><th>Amaliy soatlar:</th><td>{{ workload.practical_hours }}</td></tr>
+            <tr><th>Laboratoriya soatlari:</th><td>{{ workload.lab_hours }}</td></tr>
+            <tr><th>Mustaqil ta'lim:</th><td>{{ workload.independent_hours }}</td></tr>
+            <tr><th>Jami soatlar:</th><td><strong>{{ workload.total_hours }}</strong></td></tr>
+            <tr><th>O'quv yili:</th><td>{{ workload.academic_year }}</td></tr>
+            <tr><th>Izoh:</th><td>{{ workload.notes|default:"-" }}</td></tr>
+            <tr><th>Yaratilgan:</th><td>{{ workload.created_at|date:"d.m.Y H:i" }}</td></tr>
+        </table>
+        <a href="{% url 'workload_edit' workload.id %}" class="btn btn-warning">Tahrirlash</a>
+        <a href="{% url 'workload_list' %}" class="btn btn-secondary">Orqaga</a>
+    </div>
+</div>
+{% endblock %}

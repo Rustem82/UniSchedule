@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<style>
+    .stat-card {
+        transition: transform 0.3s, box-shadow 0.3s;
+        cursor: pointer;
+        border: none;
+        border-radius: 15px;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    .stat-icon {
+        font-size: 48px;
+        opacity: 0.3;
+        position: absolute;
+        right: 20px;
+        bottom: 20px;
+    }
+    .activity-item {
+        transition: background 0.3s;
+        cursor: pointer;
+    }
+    .activity-item:hover {
+        background: #f8f9fc;
+    }
+    .chart-container {
+        position: relative;
+        height: 300px;
+        margin: 20px 0;
+    }
+</style>
+
+<div class="mb-4">
+    <h1 class="h3">Dashboard</h1>
+    <p class="text-muted">Universitet bo'yicha umumiy statistika</p>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6 col-lg-3">
+        <div class="card stat-card bg-primary text-white">
+            <div class="card-body">
+                <h6 class="card-title">JAMI FAKULTETLAR</h6>
+                <h2 class="display-6">{{ total_faculties }}</h2>
+                <i class="fas fa-university stat-icon"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+        <div class="card stat-card bg-success text-white">
+            <div class="card-body">
+                <h6 class="card-title">JAMI KAFEDRALAR</h6>
+                <h2 class="display-6">{{ total_departments }}</h2>
+                <i class="fas fa-building stat-icon"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+        <div class="card stat-card bg-info text-white">
+            <div class="card-body">
+                <h6 class="card-title">JAMI O'QITUVCHILAR</h6>
+                <h2 class="display-6">{{ total_teachers }}</h2>
+                <i class="fas fa-chalkboard-user stat-icon"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+        <div class="card stat-card bg-warning text-white">
+            <div class="card-body">
+                <h6 class="card-title">JAMI MUTAXASSISLIKLAR</h6>
+                <h2 class="display-6">{{ total_specializations }}</h2>
+                <i class="fas fa-graduation-cap stat-icon"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart and Faculty Stats -->
+<div class="row g-4 mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Fakultetlar bo'yicha kafedralar soni</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="facultyChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Fakultetlar tafsilotlari</h5>
+            </div>
+            <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+                {% for faculty in faculties_data %}
+                <div class="mb-3 p-2 border-bottom">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ faculty.name }}</strong>
+                            <br>
+                            <small class="text-muted">{{ faculty.code }}</small>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-primary">Kafedra: {{ faculty.department_count }}</span>
+                            <br>
+                            <small>O'qituvchi: {{ faculty.teacher_count }}</small>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted">Ma'lumot yo'q</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">So'nggi qo'shilgan fakultetlar</h5>
+            </div>
+            <div class="card-body">
+                {% for faculty in recent_faculties %}
+                <div class="activity-item p-2 mb-2 border-bottom">
+                    <i class="fas fa-university text-primary me-2"></i>
+                    <strong>{{ faculty.name }}</strong>
+                    <br>
+                    <small class="text-muted">{{ faculty.created_at|date:"d.m.Y H:i" }}</small>
+                </div>
+                {% empty %}
+                <p class="text-muted">Hali fakultetlar mavjud emas</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">So'nggi qo'shilgan kafedralar</h5>
+            </div>
+            <div class="card-body">
+                {% for department in recent_departments %}
+                <div class="activity-item p-2 mb-2 border-bottom">
+                    <i class="fas fa-building text-success me-2"></i>
+                    <strong>{{ department.name }}</strong>
+                    <br>
+                    <small class="text-muted">{{ department.faculty.name }} | {{ department.created_at|date:"d.m.Y" }}</small>
+                </div>
+                {% empty %}
+                <p class="text-muted">Hali kafedralar mavjud emas</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">So'nggi qo'shilgan o'qituvchilar</h5>
+            </div>
+            <div class="card-body">
+                {% for teacher in recent_teachers %}
+                <div class="activity-item p-2 mb-2 border-bottom">
+                    <i class="fas fa-chalkboard-user text-info me-2"></i>
+                    <strong>{{ teacher.user.get_full_name|default:teacher.user.username }}</strong>
+                    <br>
+                    <small class="text-muted">{{ teacher.get_position_display }} | {{ teacher.created_at|date:"d.m.Y" }}</small>
+                </div>
+                {% empty %}
+                <p class="text-muted">Hali o'qituvchilar mavjud emas</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Fakultetlar charti
+    const ctx = document.getElementById('facultyChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ chart_labels|safe }},
+            datasets: [{
+                label: 'Kafedralar soni',
+                data: {{ chart_data|safe }},
+                backgroundColor: 'rgba(102, 126, 234, 0.5)',
+                borderColor: 'rgba(102, 126, 234, 1)',
+                borderWidth: 2,
+                borderRadius: 10
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

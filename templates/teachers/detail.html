@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ teacher.get_full_name }}{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'teacher_list' %}">O'qituvchilar</a></li>
+            <li class="breadcrumb-item active">{{ teacher.get_full_name }}</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-user-circle fa-5x text-primary mb-3"></i>
+                <h4>{{ teacher.get_full_name }}</h4>
+                <p class="text-muted">@{{ teacher.user.username }}</p>
+                <hr>
+                <div class="text-start">
+                    <p><strong><i class="fas fa-id-card me-2"></i>Xodim ID:</strong> {{ teacher.employee_id|default:"-" }}</p>
+                    <p><strong><i class="fas fa-envelope me-2"></i>Email:</strong> {{ teacher.user.email|default:"-" }}</p>
+                    <p><strong><i class="fas fa-phone me-2"></i>Telefon:</strong> {{ teacher.phone|default:"-" }}</p>
+                    <p><strong><i class="fas fa-calendar me-2"></i>Tug'ilgan:</strong> {{ teacher.birth_date|date:"d.m.Y"|default:"-" }}</p>
+                    <p><strong><i class="fas fa-calendar-alt me-2"></i>Ish boshlagan:</strong> {{ teacher.start_date|date:"d.m.Y"|default:"-" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Batafsil ma'lumotlar</h5>
+                <div>
+                    <a href="{% url 'teacher_edit' teacher.id %}" class="btn btn-warning btn-sm">
+                        <i class="fas fa-edit"></i> Tahrirlash
+                    </a>
+                    <a href="{% url 'teacher_delete' teacher.id %}" class="btn btn-danger btn-sm">
+                        <i class="fas fa-trash"></i> O'chirish
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Kafedra:</h6>
+                        <p><a href="{% url 'department_detail' teacher.department.id %}">{{ teacher.department.name }}</a></p>
+                        
+                        <h6>Lavozim:</h6>
+                        <p><span class="badge bg-info">{{ teacher.get_position_display }}</span></p>
+                        
+                        <h6>Ilmiy daraja:</h6>
+                        <p><span class="badge bg-success">{{ teacher.get_academic_degree_display }}</span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Holat:</h6>
+                        <p>
+                            {% if teacher.is_active %}
+                                <span class="badge bg-success">Faol</span>
+                            {% else %}
+                                <span class="badge bg-danger">Faol emas</span>
+                            {% endif %}
+                        </p>
+                        
+                        <h6>Ro'yxatdan o'tgan:</h6>
+                        <p>{{ teacher.created_at|date:"d.m.Y H:i" }}</p>
+                        
+                        <h6>Oxirgi tahrir:</h6>
+                        <p>{{ teacher.updated_at|date:"d.m.Y H:i" }}</p>
+                    </div>
+                </div>
+                
+                {% if teacher.address %}
+                <h6>Manzil:</h6>
+                <p>{{ teacher.address }}</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-book me-2"></i>O'qigan fanlari
+                    <span class="badge bg-info float-end">0</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted text-center py-3">
+                    <i class="fas fa-book fa-2x mb-2"></i><br>
+                    Hali fanlar mavjud emas
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

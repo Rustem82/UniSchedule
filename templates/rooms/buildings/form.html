@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-building me-2"></i>{{ title }}</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Bino nomi *</label>
+                        <input type="text" name="name" class="form-control" value="{{ building.name|default:'' }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Bino kodi *</label>
+                        <input type="text" name="code" class="form-control" value="{{ building.code|default:'' }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Manzil *</label>
+                        <input type="text" name="address" class="form-control" value="{{ building.address|default:'' }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Qavatlar soni</label>
+                        <input type="number" name="floors" class="form-control" value="{{ building.floors|default:0 }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tavsif</label>
+                        <textarea name="description" class="form-control" rows="3">{{ building.description|default:'' }}</textarea>
+                    </div>
+                    <button type="submit" class="btn btn-custom">Saqlash</button>
+                    <a href="{% url 'building_list' %}" class="btn btn-secondary">Bekor qilish</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

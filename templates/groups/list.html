@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+
+{% block title %}Akademik guruhlar{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-0">
+            <i class="fas fa-users text-primary me-2"></i>Akademik guruhlar
+        </h1>
+        <p class="text-muted mt-2">
+            Jami: <strong>{{ total_count }}</strong> ta guruh |
+            Talabalar: <strong>{{ total_students }}</strong>
+        </p>
+    </div>
+    <a href="{% url 'group_create' %}" class="btn btn-custom">
+        <i class="fas fa-plus"></i> Yangi guruh
+    </a>
+</div>
+
+<!-- Search and Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <input type="text" name="search" class="form-control"
+                           placeholder="Guruh nomi bo'yicha..."
+                           value="{{ search_query }}">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <select name="faculty" class="form-select">
+                    <option value="">Barcha fakultetlar</option>
+                    {% for faculty in faculties %}
+                    <option value="{{ faculty.id }}" {% if faculty_filter|add:"0" == faculty.id %}selected{% endif %}>
+                        {{ faculty.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="specialization" class="form-select">
+                    <option value="">Barcha mutaxassisliklar</option>
+                    {% for spec in specializations %}
+                    <option value="{{ spec.id }}" {% if spec_filter|add:"0" == spec.id %}selected{% endif %}>
+                        {{ spec.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-1">
+                <select name="course" class="form-select">
+                    <option value="">Kurs</option>
+                    {% for value, label in courses %}
+                    <option value="{{ value }}" {% if course_filter|add:"0" == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="language" class="form-select">
+                    <option value="">Ta'lim tili</option>
+                    {% for value, label in languages %}
+                    <option value="{{ value }}" {% if language_filter == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <a href="{% url 'group_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-sync-alt"></i>
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Groups Table -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Guruh nomi</th>
+                        <th>Mutaxassislik</th>
+                        <th>Fakultet</th>
+                        <th>Kurs</th>
+                        <th>Talabalar</th>
+                        <th>Qabul yili</th>
+                        <th>Holat</th>
+                        <th>Amallar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for group in groups %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                            <a href="{% url 'group_detail' group.id %}" class="text-decoration-none">
+                                <strong>{{ group.name }}</strong>
+                            </a>
+                        </td>
+                        <td>{{ group.specialization.name }}</td>
+                        <td>{{ group.specialization.faculty.name }}</td>
+                        <td>
+                            <span class="badge bg-info">{{ group.current_course }}-kurs</span>
+                        </td>
+                        <td>{{ group.student_count }}</td>
+                        <td>{{ group.year_of_admission }}</td>
+                        <td>
+                            {% if group.is_active %}
+                                <span class="badge bg-success">Faol</span>
+                            {% else %}
+                                <span class="badge bg-danger">Faol emas</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'group_detail' group.id %}" class="btn btn-sm btn-info" title="Ko'rish">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{% url 'group_edit' group.id %}" class="btn btn-sm btn-warning" title="Tahrirlash">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'group_delete' group.id %}" class="btn btn-sm btn-danger" title="O'chirish"
+                               onclick="return confirm('O\'chirishni tasdiqlaysizmi?')">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center">
+                            <div class="py-4">
+                                <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                                <h5>Ma'lumot topilmadi</h5>
+                                <p>Hali hech qanday guruh mavjud emas.</p>
+                                <a href="{% url 'group_create' %}" class="btn btn-custom mt-2">
+                                    <i class="fas fa-plus"></i> Yangi guruh qo'shish
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if groups.has_other_pages %}
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if groups.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ groups.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if faculty_filter %}&faculty={{ faculty_filter }}{% endif %}{% if spec_filter %}&specialization={{ spec_filter }}{% endif %}{% if course_filter %}&course={{ course_filter }}{% endif %}{% if language_filter %}&language={{ language_filter }}{% endif %}">
+                            <i class="fas fa-chevron-left"></i> Oldingi
+                        </a>
+                    </li>
+                {% endif %}
+
+                {% for num in groups.paginator.page_range %}
+                    {% if num >= groups.number|add:'-2' and num <= groups.number|add:'2' %}
+                        <li class="page-item {% if groups.number == num %}active{% endif %}">
+                            <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if faculty_filter %}&faculty={{ faculty_filter }}{% endif %}{% if spec_filter %}&specialization={{ spec_filter }}{% endif %}{% if course_filter %}&course={{ course_filter }}{% endif %}{% if language_filter %}&language={{ language_filter }}{% endif %}">
+                                {{ num }}
+                            </a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if groups.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ groups.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if faculty_filter %}&faculty={{ faculty_filter }}{% endif %}{% if spec_filter %}&specialization={{ spec_filter }}{% endif %}{% if course_filter %}&course={{ course_filter }}{% endif %}{% if language_filter %}&language={{ language_filter }}{% endif %}">
+                            Keyingi <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

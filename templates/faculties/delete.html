@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}Fakultetni o'chirish{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0">Fakultetni o'chirish</h4>
+            </div>
+            <div class="card-body">
+                <p>Siz <strong>{{ faculty.name }}</strong> fakultetini o'chirmoqchisiz. Bu amalni bekor qilib bo'lmaydi!</p>
+                <form method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Ha, o'chirish</button>
+                    <a href="{% url 'faculty_list' %}" class="btn btn-secondary">Bekor qilish</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

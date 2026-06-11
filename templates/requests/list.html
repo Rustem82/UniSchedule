@@ -1,0 +1,253 @@
+{% extends 'base.html' %}
+
+{% block title %}Talabnomalar{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-0">
+            <i class="fas fa-paper-plane text-primary me-2"></i>Talabnomalar
+        </h1>
+        <p class="text-muted mt-2">
+            <i class="fas fa-chart-line me-1"></i>Jami: <strong>{{ total_count }}</strong> ta talabnoma
+        </p>
+    </div>
+    <a href="{% url 'request_create' %}" class="btn btn-custom">
+        <i class="fas fa-plus"></i> Yangi talabnoma
+    </a>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-2 col-6">
+        <div class="card bg-primary text-white text-center">
+            <div class="card-body">
+                <h5>{{ stats.total }}</h5>
+                <small>Jami</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 col-6">
+        <div class="card bg-warning text-white text-center">
+            <div class="card-body">
+                <h5>{{ stats.pending }}</h5>
+                <small>Kutilmoqda</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 col-6">
+        <div class="card bg-success text-white text-center">
+            <div class="card-body">
+                <h5>{{ stats.approved }}</h5>
+                <small>Tasdiqlangan</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 col-6">
+        <div class="card bg-danger text-white text-center">
+            <div class="card-body">
+                <h5>{{ stats.rejected }}</h5>
+                <small>Rad etilgan</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 col-6">
+        <div class="card bg-info text-white text-center">
+            <div class="card-body">
+                <h5>{{ stats.sent }}</h5>
+                <small>Yuborilgan</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 col-6">
+        <div class="card bg-secondary text-white text-center">
+            <div class="card-body">
+                <h5>{{ stats.received }}</h5>
+                <small>Kelgan</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabs -->
+<ul class="nav nav-tabs mb-4">
+    <li class="nav-item">
+        <a class="nav-link {% if tab == 'all' %}active{% endif %}" href="?tab=all">
+            <i class="fas fa-list"></i> Hammasi
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if tab == 'sent' %}active{% endif %}" href="?tab=sent">
+            <i class="fas fa-paper-plane"></i> Yuborilgan
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if tab == 'received' %}active{% endif %}" href="?tab=received">
+            <i class="fas fa-inbox"></i> Kelgan (tasdiqlash)
+        </a>
+    </li>
+</ul>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <input type="hidden" name="tab" value="{{ tab }}">
+            <div class="col-md-4">
+                <input type="text" name="search" class="form-control" placeholder="Qabul qiluvchi kafedra, fan, xabar..." value="{{ search_query }}">
+            </div>
+            <div class="col-md-2">
+                <select name="status" class="form-select">
+                    <option value="">Barcha holatlar</option>
+                    {% for v, l in status_choices %}
+                    <option value="{{ v }}" {% if status_filter == v %}selected{% endif %}>{{ l }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="type" class="form-select">
+                    <option value="">Barcha turlar</option>
+                    {% for v, l in request_types %}
+                    <option value="{{ v }}" {% if type_filter == v %}selected{% endif %}>{{ l }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Qidirish</button>
+                <a href="{% url 'request_list' %}?tab={{ tab }}" class="btn btn-secondary">Tozalash</a>
+                <a href="{% url 'request_list' %}?tab={{ tab }}&export=excel" class="btn btn-success">
+                    <i class="fas fa-file-excel"></i> Excel yuklab olish
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Requests Table -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>Jo'natuvchi</th>
+                        <th>Qabul qiluvchi</th>
+                        <th>Fan</th>
+                        <th>Soatlar</th>
+                        <th>Tur</th>
+                        <th>Holat</th>
+                        <th>Sana</th>
+                        <th>Amallar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in requests %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td
+                        <td>{{ req.from_department.name|truncatechars:30 }}</td
+                        <td>{{ req.to_department.name|truncatechars:30 }}</td
+                        <td>{{ req.subject.name }}</td
+                        <td>{{ req.total_hours }} soat</td
+                        <td>
+                            {% if req.request_type == 'urgent' %}
+                                <span class="badge bg-danger">Shoshilinch</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Standart</span>
+                            {% endif %}
+                         </td
+                        <td>
+                            {% if req.status == 'pending' %}
+                                <span class="badge bg-warning">Kutilmoqda</span>
+                            {% elif req.status == 'sent' %}
+                                <span class="badge bg-info">Yuborilgan</span>
+                            {% elif req.status == 'approved' %}
+                                <span class="badge bg-success">Tasdiqlangan</span>
+                            {% elif req.status == 'rejected' %}
+                                <span class="badge bg-danger">Rad etilgan</span>
+                            {% elif req.status == 'completed' %}
+                                <span class="badge bg-primary">Bajarilgan</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Bekor qilingan</span>
+                            {% endif %}
+                         </td
+                        <td>{{ req.created_at|date:"d.m.Y" }}</td
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="{% url 'request_detail' req.id %}" class="btn btn-sm btn-info" title="Ko'rish">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                {% if req.status == 'pending' or req.status == 'sent' %}
+                                    {% if user.teacher_profile.department == req.to_department %}
+                                        <a href="{% url 'request_approve' req.id %}" class="btn btn-sm btn-success" title="Tasdiqlash">
+                                            <i class="fas fa-check"></i>
+                                        </a>
+                                        <a href="{% url 'request_reject' req.id %}" class="btn btn-sm btn-danger" title="Rad etish">
+                                            <i class="fas fa-times"></i>
+                                        </a>
+                                    {% endif %}
+                                    {% if user.teacher_profile.department == req.from_department %}
+                                        <a href="{% url 'request_cancel' req.id %}" class="btn btn-sm btn-warning" title="Bekor qilish">
+                                            <i class="fas fa-ban"></i>
+                                        </a>
+                                    {% endif %}
+                                {% endif %}
+                                {% if user.is_superuser %}
+                                    <a href="{% url 'request_delete' req.id %}" class="btn btn-sm btn-dark" title="O'chirish" onclick="return confirm('O\'chirishni tasdiqlaysizmi?')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                {% endif %}
+                            </div>
+                         </td
+                     </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center py-5">
+                            <i class="fas fa-paper-plane fa-4x text-muted mb-3"></i>
+                            <h5>Talabnomalar yo'q</h5>
+                            <p class="text-muted">Hali hech qanday talabnoma mavjud emas.</p>
+                            <a href="{% url 'request_create' %}" class="btn btn-custom mt-2">
+                                <i class="fas fa-plus"></i> Yangi talabnoma yaratish
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if requests.has_other_pages %}
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if requests.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ requests.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if type_filter %}&type={{ type_filter }}{% endif %}&tab={{ tab }}">
+                            Oldingi
+                        </a>
+                    </li>
+                {% endif %}
+
+                {% for num in requests.paginator.page_range %}
+                    {% if num >= requests.number|add:'-2' and num <= requests.number|add:'2' %}
+                        <li class="page-item {% if requests.number == num %}active{% endif %}">
+                            <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if type_filter %}&type={{ type_filter }}{% endif %}&tab={{ tab }}">
+                                {{ num }}
+                            </a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if requests.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ requests.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if type_filter %}&type={{ type_filter }}{% endif %}&tab={{ tab }}">
+                            Keyingi
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

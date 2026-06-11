@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}Talabnomani rad etish{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0"><i class="fas fa-times me-2"></i>Talabnomani rad etish</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Rad etish sababi *</label>
+                        <textarea name="rejection_reason" class="form-control" rows="4" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-danger">Rad etish</button>
+                    <a href="{% url 'request_detail' request.id %}" class="btn btn-secondary">Bekor qilish</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

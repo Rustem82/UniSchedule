@@ -1,0 +1,25 @@
+Django==5.0.6
+django-filter==24.2
+django-tables2==2.7.0
+pandas==2.2.2
+openpyxl==3.1.2
+pillow==10.3.0
+django-debug-toolbar==4.3.0
+django-extensions==3.2.3
+python-dotenv==1.0.1
+psycopg2-binary==2.9.9  # Для PostgreSQL (опционально)
+mysqlclient==2.2.4  # Для MySQL (опционально)
+reportlab==4.2.0  # Для генерации PDF отчетов
+xlsxwriter==3.1.9  # Для экспорта в Excel
+django-crispy-forms==2.1
+crispy-bootstrap5==0.7
+django-import-export==4.0.0
+django-cors-headers==4.3.1
+djangorestframework==3.15.1
+django-rest-framework-datatable==1.1.0
+django-chartjs==2.4.0
+plotly==5.22.0
+django-allauth==0.62.0
+django-ckeditor==6.7.0
+django-axes==6.5.0  # Для аудита и безопасности
+django-simple-history==3.5.0  # Для истории изменений

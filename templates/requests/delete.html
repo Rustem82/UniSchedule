@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Talabnomani o'chirish{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-dark text-white">
+                <h4 class="mb-0"><i class="fas fa-trash me-2"></i>Talabnomani o'chirish</h4>
+            </div>
+            <div class="card-body text-center">
+                <i class="fas fa-paper-plane fa-4x text-danger mb-3"></i>
+                <h5>Talabnoma #{{ request.id }} ni o'chirmoqchimisiz?</h5>
+                <p>Bu amalni bekor qilib bo'lmaydi!</p>
+                <form method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">O'chirish</button>
+                    <a href="{% url 'request_detail' request.id %}" class="btn btn-secondary">Bekor qilish</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

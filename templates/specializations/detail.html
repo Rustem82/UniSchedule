@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ specialization.name }}{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'specialization_list' %}">Mutaxassisliklar</a></li>
+            <li class="breadcrumb-item active">{{ specialization.name }}</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="row">
+    <div class="col-md-7">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">{{ specialization.name }}</h4>
+                <div>
+                    <a href="{% url 'specialization_edit' specialization.id %}" class="btn btn-warning btn-sm">
+                        <i class="fas fa-edit"></i> Tahrirlash
+                    </a>
+                    <a href="{% url 'specialization_delete' specialization.id %}" class="btn btn-danger btn-sm">
+                        <i class="fas fa-trash"></i> O'chirish
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th style="width: 130px;">Kodi:</th>
+                                <td><span class="badge bg-primary">{{ specialization.code }}</span></td>
+                            </tr>
+                            <tr>
+                                <th>Fakultet:</th>
+                                <td>
+                                    <a href="{% url 'faculty_detail' specialization.faculty.id %}">
+                                        {{ specialization.faculty.name }}
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Daraja:</th>
+                                <td>
+                                    <span class="badge {% if specialization.degree_type == 'bakalavr' %}bg-info{% elif specialization.degree_type == 'magistr' %}bg-success{% else %}bg-warning{% endif %}">
+                                        {{ specialization.get_degree_type_display }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Ta'lim shakli:</th>
+                                <td>{{ specialization.get_education_type_display }}</td>
+                            </tr>
+                            <tr>
+                                <th>Muddat:</th>
+                                <td>{{ specialization.duration }} oy ({{ specialization.duration|divisibleby:12|yesno:"yil,oy" }})</td>
+                            </tr>
+                            <tr>
+                                <th>Kreditlar:</th>
+                                <td>{{ specialization.credits }}</td>
+                            </tr>
+                            <tr>
+                                <th>Yaratilgan:</th>
+                                <td>{{ specialization.created_at|date:"d.m.Y H:i" }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Tavsif:</h6>
+                        <p>{{ specialization.description|default:"Ma'lumot yo'q" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-5">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-users me-2"></i>Akademik guruhlar
+                    <span class="badge bg-info float-end">{{ groups.count }}</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if groups %}
+                    <div class="list-group">
+                        {% for group in groups %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ group.name }}</strong>
+                                    <br>
+                                    <small class="text-muted">Qabul yili: {{ group.year_of_admission }}</small>
+                                </div>
+                                <span class="badge bg-secondary">{{ group.student_count }} talaba</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center py-3">
+                        <i class="fas fa-users fa-2x mb-2"></i><br>
+                        Hali akademik guruhlar mavjud emas
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
