@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "unischedule_project/wsgi.py",
+      "src": "vercel_app.py",
       "use": "@vercel/python",
       "config": {
         "maxLambdaSize": "15mb",
@@ -12,16 +12,8 @@
   ],
   "routes": [
     {
-      "src": "/static/(.*)",
-      "dest": "/static/$1"
-    },
-    {
       "src": "/(.*)",
-      "dest": "unischedule_project/wsgi.py"
+      "dest": "/vercel_app.py"
     }
-  ],
-  "env": {
-    "DEBUG": "False",
-    "DJANGO_SETTINGS_MODULE": "unischedule_project.settings"
-  }
+  ]
 }
